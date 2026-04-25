@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyTasks</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">MyTasks</div>
+      <section class="sidebar-user hidden" id="sidebarUser">
+        <div class="avatar sidebar-avatar" id="sidebarUserAvatar">ME</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarUserName">Me</div>
+          <div class="sidebar-user-email" id="sidebarUserEmail"></div>
+          <div class="sidebar-user-role" id="sidebarUserRole"></div>
+        </div>
+      </section>
+      <div class="sidebar-search">
+        <input id="taskSearch" type="search" placeholder="Search tasks">
+      </div>
+      <nav class="nav" id="sidebarNav"></nav>
+      <div class="sidebar-footer">
+        <button class="button secondary full" id="newListBtn">+ New list</button>
+      </div>
+      <div class="sidebar-resizer" id="sidebarResizer" title="Resize sidebar"></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="viewTitle">All Tasks</h1>
+          <p id="viewMeta">0 tasks</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="button secondary" id="teamBtn">Team</button>
+          <button class="button secondary" id="importBtn">Import</button>
+          <div class="menu-wrap">
+            <button class="button secondary" id="exportBtn">Export</button>
+            <div class="export-menu" id="exportMenu">
+              <button data-format="json">Full backup (.json)</button>
+              <button data-format="csv">Tasks only (.csv)</button>
+            </div>
+          </div>
+          <button class="button primary" id="newTaskBtn">New task</button>
+        </div>
+      </header>
+
+      <section class="filters" aria-label="Filters">
+        <label>
+          Assignee
+          <select id="assigneeFilter"></select>
+        </label>
+        <label>
+          Priority
+          <select id="priorityFilter">
+            <option value="">Any priority</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+        <label>
+          List
+          <select id="listFilter"></select>
+        </label>
+      </section>
+
+      <section class="task-board" id="taskBoard"></section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="taskModal">
+    <form class="modal" id="taskForm">
+      <div class="modal-head">
+        <h2 id="taskModalTitle">New Task</h2>
+        <button type="button" class="icon-button" data-close="task">x</button>
+      </div>
+      <div class="form-grid">
+        <label class="span-2">
+          Title
+          <input id="taskTitle" required maxlength="160" autocomplete="off">
+        </label>
+        <label class="span-2">
+          Description
+          <textarea id="taskDescription" rows="4"></textarea>
+        </label>
+        <label>
+          Priority
+          <select id="taskPriority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </label>
+        <label>
+          Deadline
+          <input id="taskDeadline" type="date">
+        </label>
+        <label>
+          Assign to
+          <select id="taskAssignee"></select>
+        </label>
+        <label>
+          Repeat
+          <select id="taskRepeat">
+            <option value="none">None</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </label>
+        <label>
+          List
+          <select id="taskList"></select>
+        </label>
+        <label>
+          Images
+          <input id="taskAttachments" type="file" accept="image/*" multiple>
+        </label>
+      </div>
+      <div class="attachment-preview" id="attachmentPreview"></div>
+      <div class="modal-actions">
+        <button type="button" class="button danger hidden" id="deleteTaskBtn">Delete</button>
+        <span></span>
+        <button type="button" class="button secondary" data-close="task">Cancel</button>
+        <button type="submit" class="button primary">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="profileModal">
+    <form class="modal profile-modal" id="profileForm">
+      <div class="modal-head">
+        <h2>Welcome to MyTasks</h2>
+        <button type="button" class="icon-button hidden" id="profileCloseBtn">x</button>
+      </div>
+      <div class="profile-body">
+        <label>
+          Name
+          <input id="profileName" required maxlength="120" autocomplete="name">
+        </label>
+        <label>
+          Email
+          <input id="profileEmail" type="email" required maxlength="180" autocomplete="email">
+        </label>
+        <label>
+          Role
+          <input id="profileRole" required maxlength="120" autocomplete="organization-title">
+        </label>
+      </div>
+      <div class="modal-actions profile-actions">
+        <span></span>
+        <button type="submit" class="button primary">Continue</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="teamModal">
+    <section class="modal">
+      <div class="modal-head">
+        <h2>Team</h2>
+        <button type="button" class="icon-button" data-close="team">x</button>
+      </div>
+      <div class="team-list" id="teamList"></div>
+      <form class="team-add" id="teamForm">
+        <input id="memberName" placeholder="Name" required autocomplete="off">
+        <input id="memberRole" placeholder="Role" autocomplete="off">
+        <button class="button primary" type="submit">Add</button>
+      </form>
+    </section>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
