@@ -1,15 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
-import ToDoListProject from './index.jsx'
-import { Provider } from 'react-redux'
-import store from './components/store.jsx'
+import App from './App.jsx'
+import './index.css'
+import { TaskProvider } from './context/TaskContext.jsx'
+
+import { registerSW } from 'virtual:pwa-register'
+
+registerSW({
+  immediate: true,
+})
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Provider store = {store}>
-    <ToDoListProject/>
-
-    </Provider>
-
+    <TaskProvider>
+      <App />
+    </TaskProvider>
   </React.StrictMode>,
 )

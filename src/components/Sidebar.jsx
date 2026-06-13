@@ -1,107 +1,90 @@
-import { displayMemberName, initials, colors } from '../utils';
+﻿import { Link } from 'react-router-dom';
+import Avatar from './Avatar';
+import { useTasks } from '../context/TaskContext';
 
-function Sidebar({ sidebarWidth, onStartResize, user, tasks, team, lists, active, onActiveChange, onNewList, search, onSearchChange }) {
-  const fixedSections = [
-    { type: 'fixed', id: 'all', label: 'All Tasks' },
-    { type: 'fixed', id: 'important', label: 'Important' },
-    { type: 'fixed', id: 'assigned', label: 'Assigned to Me' }
-  ];
+export default function Sidebar() {
+  const { state, currentWorkspace, dispatch } = useTasks();
+  const tasks = currentWorkspace?.tasks || [];
+  const user = state.user;
+  const team = currentWorkspace?.team || [];
+  const teamEnabled = currentWorkspace?.teamEnabled;
 
-  const countFor = (section) => {
-    const sectionTasks = tasks.filter((task) => {
-      if (section.id === 'important') return task.priority === 'high' || task.priority === 'urgent';
-      if (section.id === 'assigned') return task.assignee_id === 'me';
-      return true;
-    });
-    return sectionTasks.filter((task) => !task.done).length;
-  };
-
+  const importantCount = tasks.filter(
+    (task) => (task.priority === 'high' || task.priority === 'urgent') && !task.completed
+  ).length;
+  const pendingTasks = tasks.filter((task) => !task.completed).length;
   return (
-    <aside className="sidebar" style={{ width: sidebarWidth }}>
-      <div className="sidebar-top">
-        <div className="brand">MyTasks</div>
-        {user && (
-          <section className="sidebar-user" onClick={() => {}}>
-            <div className="avatar sidebar-avatar" style={{ background: user.color || colors[0] }}>
-              {initials(user.name)}
-            </div>
-            <div className="sidebar-user-info">
-              <div className="sidebar-user-name">{user.name} (me)</div>
-              <div className="sidebar-user-email">{user.email}</div>
-              <div className="sidebar-user-role">{user.role}</div>
-            </div>
-          </section>
-        )}
-        <div className="sidebar-search">
-          <input
-            id="taskSearch"
-            type="search"
-            placeholder="Search tasks"
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-          />
+    <aside className="w-[280px] min-w-[240px] max-w-[360px] flex h-screen flex-col bg-slate-900 border-r border-slate-800 text-white">
+      <div className="overflow-y-auto flex-1 px-3 py-4 space-y-6 scrollbar-thin scrollbar-track-slate-900 scrollbar-thumb-slate-700">
+        <div className="mb-4">
+          <Link to ="/" className="text-2xl font-bold text-white text-decoration-none"><p className="text-lg font-semibold">My tasks</p></Link>
         </div>
+
+        <div className="rounded-xl p-3 bg-slate-800">
+          <div className="flex items-center gap-2">
+            <Avatar name={user?.name} />
+            <div>
+              <div className="font-semibold text-sm text-white">
+                {user?.name || 'Guest User'}
+              </div>
+              <div className="text-slate-400 text-xs">{user?.role ? user.role : 'Developer'}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl p-3 bg-slate-800 mb-6 text-sm">
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span>Important</span>
+              <span>{importantCount}</span>
+            </div>
+
+            {currentWorkspace.teamEnabled && (
+              <div className="flex justify-between">
+                <span>My tasks</span>
+                <span>{tasks.filter((task) => task.assignedTo === user?.id && !task.completed).length}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span>Pending tasks</span>
+              <span>{pendingTasks}</span>
+            </div>
+          </div>
+        </div>
+
+        {teamEnabled && (
+          <div className="rounded-xl p-3 bg-slate-800">
+            <p className="text-lg font-semibold mb-2">Team details</p>
+
+            <div className="space-y-4">
+              {team.length === 0 && (
+                <p className="text-sm text-slate-400">No team members yet.</p>
+              )}
+              {team.map((member) => {
+                const count = tasks.filter((task) => task.assignedTo === member.id).length;
+                return (
+                  <div key={member.id} className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={member.name} />
+                      <span>{member.name}</span>
+                    </div>
+                    <span>{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      <nav className="nav" id="sidebarNav">
-        {fixedSections.map((section) => (
+      <div className="sticky bottom-0 border-t border-slate-800 bg-slate-900 px-3 py-4">
           <button
-            key={section.id}
-            type="button"
-            className={`nav-item ${active.type === section.type && active.id === section.id ? 'active' : ''}`}
-            onClick={() => onActiveChange(section)}
+            className="mb-3 new-task-button"
+            onClick={() => dispatch({ type: 'OPEN_TASK_MODAL' })}
           >
-            <span className="nav-label">{section.label}</span>
-            <span className="count">{countFor(section)}</span>
+            + New Task
           </button>
-        ))}
-
-        <div className="nav-heading">Team</div>
-        {team.map((member) => (
-          <button
-            key={member.id}
-            type="button"
-            className={`nav-item ${active.type === 'team' && active.id === member.id ? 'active' : ''}`}
-            onClick={() => onActiveChange({ type: 'team', id: member.id })}
-          >
-            <span className="dot" style={{ background: member.color }} />
-            <span className="nav-label">{displayMemberName(member)}</span>
-            <span className="count">{tasks.filter((task) => !task.done && task.assignee_id === member.id).length}</span>
-          </button>
-        ))}
-
-        <div className="nav-heading">Lists</div>
-        {lists.map((list) => (
-          <button
-            key={list.id}
-            type="button"
-            className={`nav-item ${active.type === 'list' && active.id === list.id ? 'active' : ''}`}
-            onClick={() => onActiveChange({ type: 'list', id: list.id })}
-          >
-            <span className="dot" style={{ background: list.color }} />
-            <span className="nav-label">{list.name}</span>
-            <span className="count">{tasks.filter((task) => !task.done && task.list_id === list.id).length}</span>
-            <span
-              className="nav-delete"
-              onClick={(event) => {
-                event.stopPropagation();
-                onNewList(list, true);
-              }}
-            >
-              x
-            </span>
-          </button>
-        ))}
-      </nav>
-
-      <div className="sidebar-footer">
-        <button type="button" className="button secondary full" onClick={() => onNewList(null, false)}>
-          + New list
-        </button>
       </div>
-      <div className="sidebar-resizer" id="sidebarResizer" title="Resize sidebar" onMouseDown={onStartResize} />
     </aside>
   );
 }
-
-export default Sidebar;

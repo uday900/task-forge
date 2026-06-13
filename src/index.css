@@ -1,31 +1,49 @@
+@import "tailwindcss";
 
-.app{
-  width: 40%;
-  padding: 70px;
-  background-color: aliceblue;
-  margin-top: 50px
-}
-
-.icon{
-  background: none;
-  border: none;
-  font-size: 18px;
-}
-.edit-icon{
-  color: skyblue;
-}
-.delete-icon{
-  color: red;
-}
-.save-icon{
-  color: green;
+.filter-button {
+    border-radius: 10%; /* Fully rounded */
+    font-size: 0.875rem; /* Small text */
 }
 
-@media (max-width: 600px) {
-  .app{
+.new-task-button {
     width: 100%;
-    padding: 0;
-    margin-top: 50px;
-  }
+    padding: 14px 16px;
+
+    background: linear-gradient(
+        135deg,
+        rgb(59 130 246),
+        rgb(37 99 235)
+    );
+
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    border: none;
+    border-radius: 16px;
+
+    cursor: pointer;
+
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);
+
+    transition: all 0.2s ease;
 }
 
+.new-task-button:hover {
+    background: linear-gradient(
+        135deg,
+        rgb(96 165 250),
+        rgb(59 130 246)
+    );
+
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.35);
+}
+
+.new-task-button:active {
+    transform: translateY(0);
+}
+
+.new-task-button:focus {
+    outline: none;
+}
