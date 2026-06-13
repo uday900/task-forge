@@ -1,6 +1,8 @@
-# ToDoApp
+# TaskForge
 
-A React + Vite task manager app with workspace support, team collaboration features, and quick task filtering.
+TaskForge is a modern React + Vite task management app built for teams and individual workflows. It includes workspace support, custom roles, task search, filters, and a polished dashboard for managing overdue, upcoming, and completed work.
+
+**Author:** Uday Kiran darla - udaykirandarla2002@gma,,
 
 ## Features
 
