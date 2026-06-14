@@ -5,6 +5,11 @@
     font-size: 0.875rem; /* Small text */
 }
 
+.rounded-button {
+    border-radius: 10px; /* Fully rounded */
+    font-size: 0.875rem; /* Small text */
+}
+
 .new-task-button {
     width: 100%;
     padding: 14px 16px;

@@ -269,6 +269,9 @@ function taskReducer(state, action) {
         return state;
       }
 
+    case "RESET_DATA":
+      return initialState;
+
     default:
       return state;
   }
@@ -299,6 +302,7 @@ const [state, dispatch] = useReducer(
       "task-manager-data",
       JSON.stringify(state)
     );
+    console.log("State saved to localStorage", state);
   } catch (err) {
     console.error("Failed to save state", err);
   }

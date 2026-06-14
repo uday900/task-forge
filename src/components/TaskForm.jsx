@@ -85,7 +85,7 @@ export default function TaskForm({ onClose, task }) {
 
       <form onSubmit={handleSubmit}>
         {/* Title */}
-        <div className="mb-4">
+        <div className="mb-2">
           <label className="block text-sm text-slate-400 mb-2">
             Task Title *
           </label>
@@ -95,8 +95,8 @@ export default function TaskForm({ onClose, task }) {
           w-full
           rounded-2xl
           bg-slate-800
-          px-4
-          py-3
+          px-3
+          py-2
           text-white
           outline-none
           focus:ring-2
@@ -115,7 +115,7 @@ export default function TaskForm({ onClose, task }) {
         </div>
 
       {/* Description */}
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="block text-sm text-slate-400 mb-2">
           Description
         </label>
@@ -126,8 +126,8 @@ export default function TaskForm({ onClose, task }) {
         w-full
         rounded-2xl
         bg-slate-800
-        px-4
-        py-3
+        px-3
+        py-2
         text-white
         outline-none
         resize-none
@@ -140,7 +140,7 @@ export default function TaskForm({ onClose, task }) {
       </div>
 
       {/* Priority */}
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="block text-sm text-slate-400 mb-2">
           Priority
         </label>
@@ -166,7 +166,7 @@ export default function TaskForm({ onClose, task }) {
       </div>
 
       {/* Due Date */}
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="block text-sm text-slate-400 mb-2">
           Due Date
         </label>
@@ -189,7 +189,7 @@ export default function TaskForm({ onClose, task }) {
 
       {/* Assignee */}
       {currentWorkspace?.teamEnabled && team.length > 0 && (
-        <div className="mb-6">
+        <div className="mb-2">
           <label className="block text-sm text-slate-400 mb-2">
             Assign To
           </label>

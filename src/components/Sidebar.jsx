@@ -16,8 +16,11 @@ export default function Sidebar() {
   return (
     <aside className="w-[280px] min-w-[240px] max-w-[360px] flex h-screen flex-col bg-slate-900 border-r border-slate-800 text-white">
       <div className="overflow-y-auto flex-1 px-3 py-4 space-y-6 scrollbar-thin scrollbar-track-slate-900 scrollbar-thumb-slate-700">
-        <div className="mb-4">
-          <Link to ="/" className="text-2xl font-bold text-white text-decoration-none"><p className="text-lg font-semibold">My tasks</p></Link>
+        <div className="mb-4 ">
+          <Link to="/" className="flex items-center gap-3 text-decoration-none">
+            <img src="/app-logo.png" alt="TaskForge logo" className="h-14 w-14 rounded-xl object-cover" />
+            <span className="text-lg font-semibold text-white">TaskForge</span>
+          </Link>
         </div>
 
         <div className="rounded-xl p-3 bg-slate-800">
@@ -61,7 +64,7 @@ export default function Sidebar() {
                 <p className="text-sm text-slate-400">No team members yet.</p>
               )}
               {team.map((member) => {
-                const count = tasks.filter((task) => task.assignedTo === member.id).length;
+                const count = tasks.filter((task) => task.assignedTo === member.id && !task.completed).length;
                 return (
                   <div key={member.id} className="flex justify-between items-center">
                     <div className="flex items-center gap-3">

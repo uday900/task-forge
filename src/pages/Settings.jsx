@@ -40,6 +40,16 @@ export default function Settings() {
     }
   };
 
+  const handleDeleteAccount = () => {
+    const confirmed = window.confirm(
+      '⚠️ Delete account data? This will wipe all workspaces, tasks, team members, and settings. This cannot be undone.'
+    );
+    if (confirmed) {
+      dispatch({ type: 'RESET_DATA' });
+      navigate('/');
+    }
+  };
+
   const handleExportData = () => {
     const dataToExport = {
       user: state.user,
@@ -134,10 +144,10 @@ export default function Settings() {
   return (
     <main className="flex-1 h-screen overflow-y-auto bg-slate-950 text-white px-6 py-6">
 
-      <div className="rounded-3xl bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-2 border-blue-500/50 p-8">
+      <div className="rounded-3xl bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-2 border-blue-500/50 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-2xl font-bold">
               {currentWorkspace?.name}
             </h1>
 
@@ -249,7 +259,7 @@ export default function Settings() {
             <span>Add workspace</span>
             <div>
               <button
-                className="bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+                className="bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 rounded-button "
                 onClick={() => {
                   const name = window.prompt('New workspace name');
                   if (name && name.trim()) {
@@ -266,14 +276,14 @@ export default function Settings() {
             <span>Data Import/Export</span>
             <div className="flex gap-2">
               <button
-                className="bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+                className="bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 rounded-button  "
                 onClick={handleExportData}
               >
                 Export data
               </button>
               <button
-                className="bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
-                onClick={() => document.getElementById('import-input').click()}
+                className="bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 rounded-button "
+                onClick={() => document.getElementById('import-input')?.click()}
               >
                 Import data
               </button>
@@ -281,28 +291,88 @@ export default function Settings() {
           </div>
 
 
-          <div className="rounded-3xl bg-rose-500/5 border-2 border-rose-500/20 p-5">
-            <h3 className="text-rose-400 font-semibold">
-              Danger Zone
-            </h3>
+          <div className="mt-8 rounded-2xl border-2 border-rose-500/20 bg-rose-500/[0.03] overflow-hidden">
 
-            <p className="text-slate-400 text-sm mt-2">
-              Permanently delete this workspace and all tasks.
-            </p>
+            <div className="border-b border-rose-500/10 px-6 py-4">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-rose-400">
+                ⚠️ Danger Zone
+              </h3>
 
-            <button
-              className="
-      mt-4
-      rounded-2xl
-      bg-rose-600
-      px-4
-      py-2
-      text-sm
-      font-semibold
-    "
-            >
-              Delete Workspace
-            </button>
+              <p className="mt-1 text-sm text-slate-400">
+                Destructive actions cannot be undone.
+              </p>
+            </div>
+
+            <div className="divide-y divide-slate-800">
+
+              {/* Delete Workspace */}
+              <div className="flex items-center justify-between gap-6 px-6 py-2">
+                <div>
+                  <h4 className="font-medium text-white">
+                    Delete Workspace
+                  </h4>
+
+                  <p className="mt-1 text-sm text-slate-400">
+                    Remove this workspace and all associated tasks.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleDeleteWorkspace}
+                  className="
+          whitespace-nowrap
+          rounded-lg
+          border-2
+          border-rose-500/30
+          bg-rose-500/10
+          px-4
+          py-2
+          text-sm
+          font-medium
+          text-rose-400
+          transition-all
+          hover:bg-rose-500/20
+          hover:border-rose-500/50
+          rounded-button
+        "
+                >
+                  Delete Workspace
+                </button>
+              </div>
+
+              {/* Delete Account */}
+              <div className="flex items-center justify-between gap-6 px-6 py-2">
+                <div>
+                  <h4 className="font-medium text-white">
+                    Delete All Account Data
+                  </h4>
+
+                  <p className="mt-1 text-sm text-slate-400">
+                    Wipe all workspaces, tasks, members and settings permanently.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleDeleteAccount}
+                  className="
+          whitespace-nowrap
+          rounded-lg
+          bg-rose-600
+          px-4
+          py-2
+          text-sm
+          font-medium
+          text-white
+          transition-all
+          hover:bg-rose-500
+          rounded-button
+        "
+                >
+                  Delete Everything
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
       </section>
@@ -362,8 +432,12 @@ export default function Settings() {
 
                   <div className=" flex justify-between items-center">
                     <div className="flex gap-2">
-                      <button onClick={() => handleEditMember(member)}>Edit</button>
-                      <button onClick={() => handleDeleteMember(member.id)}>Delete</button>
+                      <button onClick={() => handleEditMember(member)} className="rounded-button">
+                        Edit
+                      </button>
+                      <button onClick={() => handleDeleteMember(member.id)} className="rounded-button">
+                        Delete
+                      </button>
                     </div>
 
                   </div>
@@ -373,6 +447,14 @@ export default function Settings() {
           )}
         </section>
       )}
+
+      <input
+        id="import-input"
+        type="file"
+        accept="application/json"
+        onChange={handleImportData}
+        className="hidden"
+      />
 
       {showAddTeamModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">

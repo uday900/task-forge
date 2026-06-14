@@ -1,4 +1,5 @@
-﻿import { useTasks } from "../context/TaskContext";
+﻿import { useEffect, useRef, useState } from "react";
+import { useTasks } from "../context/TaskContext";
 import Avatar from "./Avatar";
 
 const priorityConfig = {
@@ -22,6 +23,21 @@ const priorityConfig = {
 
 export default function TaskCard({ task, overdueLabel }) {
   const { currentWorkspace, dispatch } = useTasks();
+  const [localCompleted, setLocalCompleted] = useState(task.completed);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const removeTimeout = useRef(null);
+
+  useEffect(() => {
+    setLocalCompleted(task.completed);
+  }, [task.completed]);
+
+  useEffect(() => {
+    return () => {
+      if (removeTimeout.current) {
+        clearTimeout(removeTimeout.current);
+      }
+    };
+  }, []);
 
   const assignee = currentWorkspace?.team?.find(
     (member) => member.id === task.assignedTo
@@ -48,21 +64,29 @@ export default function TaskCard({ task, overdueLabel }) {
         px-3
         py-2
         rounded-lg
-        hover:bg-sky-700/20
         transition-all
+        duration-300
+        transform-gpu
         cursor-pointer
         bg-sky-700/10
-        ${task.completed ? "opacity-70" : ""}
+        ${isRemoving ? 'translate-x-6 opacity-0 scale-95' : ''}
+        ${task.completed ? 'translate-x-2 opacity-70 grayscale-[.18] hover:bg-sky-700/10' : 'hover:bg-sky-700/20'}
       `}
       onClick={handleTaskClick}
     >
       <button
         onClick={(e) => {
           e.stopPropagation();
-          dispatch({
-            type: "TOGGLE_TASK",
-            payload: task.id,
-          });
+          if (isRemoving) return;
+          setLocalCompleted((value) => !value);
+          setIsRemoving(true);
+          removeTimeout.current = window.setTimeout(() => {
+            dispatch({
+              type: 'TOGGLE_TASK',
+              payload: task.id,
+            });
+            setIsRemoving(false);
+          }, 220);
         }}
         className={`
           mt-[2px]
@@ -73,16 +97,13 @@ export default function TaskCard({ task, overdueLabel }) {
           items-center
           justify-center
           rounded-full
-          border
+          border-2
           transition-all
-          ${
-            task.completed
-              ? "border-blue-500 bg-blue-500 text-white"
-              : "border-slate-500 hover:border-slate-300"
-          }
+          duration-300
+          ${localCompleted ? 'border-blue-500 bg-blue-500 text-white scale-105' : 'border-slate-500 hover:border-slate-300 hover:scale-110'}
         `}
       >
-        {task.completed && (
+        {localCompleted ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-3 w-3"
@@ -97,7 +118,7 @@ export default function TaskCard({ task, overdueLabel }) {
               d="M5 13l4 4L19 7"
             />
           </svg>
-        )}
+        ) : null}
       </button>
 
       <div className="flex-1 min-w-0">
@@ -108,7 +129,7 @@ export default function TaskCard({ task, overdueLabel }) {
             truncate
             ${
               task.completed
-                ? "line-through text-slate-500"
+                ? "line-through text-slate-500 opacity-80"
                 : "text-slate-300"
             }
           `}

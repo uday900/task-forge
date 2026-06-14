@@ -189,7 +189,7 @@ export default function MainContent() {
                     {['low', 'medium', 'high', 'urgent'].map((priority) => (
                       <button
                         key={priority}
-                        className={`rounded-lg px-3 py-2 text-xs filter-button ${filterPriorities.includes(priority)
+                        className={`rounded-lg px-3 py-2 text-xs rounded-button ${filterPriorities.includes(priority)
                           ? 'bg-blue-500 text-white'
                           : 'bg-slate-700'
                           }`}
@@ -208,7 +208,7 @@ export default function MainContent() {
                         {assignees.map((member) => (
                           <button
                             key={member.id}
-                            className={`rounded-lg px-3 py-2 text-xs filter-button ${filterAssignees.includes(member.id)
+                            className={`rounded-lg px-3 py-2 text-xs rounded-button ${filterAssignees.includes(member.id)
                               ? 'bg-blue-500 text-white'
                               : 'bg-slate-700'
                               }`}
@@ -229,10 +229,16 @@ export default function MainContent() {
                           </button>
                       </div></>
                   )}
-                  <div className="mt-5 flex justify-end">
+                  <div className="mt-5 flex justify-end gap-2">
+                    <button
+                      onClick={() => setShowFilters(!showFilters)}
+                      className="rounded-button bg-slate-500 px-3 py-2 text-xs font-medium hover:bg-slate-600 "
+                    >
+                      Close
+                    </button>
                     <button
                       onClick={clearAllFilters}
-                      className="rounded-xl bg-slate-700 px-3 py-2 text-xs font-medium hover:bg-slate-600 "
+                      className="rounded-button bg-slate-700 px-3 py-2 text-xs font-medium hover:bg-slate-600 "
                     >
                       Clear Filters
                     </button>
@@ -260,7 +266,7 @@ export default function MainContent() {
               {filterPriorities.map((priority) => (
                 <span
                   key={priority}
-                  className="flex items-center gap-1 rounded-full bg-slate-700 px-3 py-1 text-xs"
+                  className="flex items-center gap-1 rounded-button bg-slate-700 px-3 py-1 text-xs"
                 >
                   {priority}
                   <button onClick={() => togglePriorityFilter(priority)}>✕</button>
@@ -338,8 +344,9 @@ export default function MainContent() {
         </section>
 
         <section className="rounded-xl bg-slate-900">
-          <button
-            className="flex w-full items-center justify-between gap-3 p-4 text-sm font-semibold text-white"
+          <div
+            className="flex w-full cursor-pointer items-center justify-between gap-3 p-4 text-sm font-semibold text-white"
+            role="button"
             onClick={() => setShowCompleted((value) => !value)}
           >
             <span className="inline-flex items-center gap-2 text-slate-300">
@@ -347,23 +354,20 @@ export default function MainContent() {
               Completed ({completedTasks.length})
             </span>
             {completedTasks.length > 0 && (
-    <button
-onClick={() => {
-                      if (window.confirm('Delete all completed tasks? This cannot be undone.')) {
-                        dispatch({ type: 'DELETE_ALL_COMPLETED' });
-                      }
-                    }}      className="
-        text-xs
-        text-slate-500
-        hover:text-rose-400
-        transition-colors
-      "
-    >
-      Clear completed
-    </button>  )}
-
-            
-          </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm('Delete all completed tasks? This cannot be undone.')) {
+                    dispatch({ type: 'DELETE_ALL_COMPLETED' });
+                  }
+                }}
+                className="text-xs text-slate-500 hover:text-rose-400 transition-colors"
+              >
+                Clear completed
+              </button>
+            )}
+          </div>
 
           {showCompleted && (
             <div className="space-y-3 border-t border-slate-700 p-4 pt-0">

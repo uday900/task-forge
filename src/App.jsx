@@ -4,11 +4,12 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import UserSetupModal from './components/UserSetupModal';
+import TaskModal from './components/TaskModal';
 
 export default function App() {
   const { state } = useTasks();
   const user = state.user;
-
+console.log('Current user:', user);
   return (
     <BrowserRouter>
       {(!user?.name || !user?.email || !user?.role) && <UserSetupModal />}
@@ -24,6 +25,8 @@ export default function App() {
           </Routes>
         </div>
       </div>
+
+      <TaskModal />
     </BrowserRouter>
   );
 }
