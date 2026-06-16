@@ -1,4 +1,6 @@
 import { useTasks } from '../context/TaskContext';
+import AttachmentsList from './AttachmentsList';
+import { deleteAttachment, deleteAttachmentsForTask } from '../utils/attachmentUtils';
 
 const priorityConfig = {
   low: {
@@ -55,7 +57,37 @@ export default function TaskDetails({ task, onClose, onEdit }) {
       })
     : 'Not available';
 
-    console.log(task)
+  const handleRemoveAttachment = async (attachment) => {
+    await deleteAttachment(attachment.path);
+    const updatedAttachments = (task.attachments || []).filter(
+      (att) => att.id !== attachment.id
+    );
+    dispatch({
+      type: 'UPDATE_TASK',
+      payload: {
+        ...task,
+        attachments: updatedAttachments,
+      },
+    });
+  };
+
+  const handleDeleteTask = async () => {
+    if (window.confirm('Delete this task? This action cannot be undone.')) {
+      try {
+        // Delete all attachment files from disk
+        if (task.attachments && task.attachments.length > 0) {
+          await deleteAttachmentsForTask(task.attachments);
+        }
+        
+        dispatch({ type: 'DELETE_TASK', payload: task.id });
+        dispatch({ type: 'CLOSE_TASK_MODAL' });
+      } catch (error) {
+        console.error('Failed to delete task:', error);
+        alert('Failed to delete task attachments. Please try again.');
+      }
+    }
+  };
+
   return (
     <div className="relative rounded-3xl bg-slate-900 p-8 text-white">
       {/* Close Button */}
@@ -147,17 +179,17 @@ export default function TaskDetails({ task, onClose, onEdit }) {
         </div>
 
         {/* Assigned To */}
-        {currentWorkspace?.teamEnabled && (<div className="rounded-2xl bg-slate-800/50 p-4">
-          <p className="mb-2 text-xs uppercase tracking-wide text-slate-400">
-            Assigned To
-          </p>
+        {currentWorkspace?.teamEnabled && (
+          <div className="rounded-2xl bg-slate-800/50 p-4">
+            <p className="mb-2 text-xs uppercase tracking-wide text-slate-400">
+              Assigned To
+            </p>
 
-          
             <p className="text-slate-200">
               {assignee?.name || 'Unassigned'}
             </p>
-         
-        </div> )}
+          </div>
+        )}
 
         {/* Created */}
         <div className="rounded-2xl bg-slate-800/50 p-4">
@@ -170,6 +202,20 @@ export default function TaskDetails({ task, onClose, onEdit }) {
           </p>
         </div>
       </div>
+
+      {/* Attachments Section */}
+      {task.attachments && task.attachments.length > 0 && (
+        <div className="mb-8 rounded-2xl bg-slate-800/40 p-4">
+          <h3 className="mb-4 text-xs uppercase tracking-wider text-slate-400">
+            Attachments ({task.attachments.length})
+          </h3>
+          <AttachmentsList
+            attachments={task.attachments}
+            onRemove={handleRemoveAttachment}
+            isEditable={true}
+          />
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-4">
@@ -211,12 +257,7 @@ export default function TaskDetails({ task, onClose, onEdit }) {
 
         <button
           type="button"
-          onClick={() => {
-            if (window.confirm('Delete this task? This action cannot be undone.')) {
-              dispatch({ type: 'DELETE_TASK', payload: task.id });
-              dispatch({ type: 'CLOSE_TASK_MODAL' });
-            }
-          }}
+          onClick={handleDeleteTask}
           className="
             flex-1
             rounded-2xl

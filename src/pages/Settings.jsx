@@ -2,6 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTasks } from '../context/TaskContext';
 import Avatar from '../components/Avatar';
+import {
+  collectAttachmentsFromWorkspaces,
+  deleteAttachmentsForTask,
+  exportBackup,
+  importBackup,
+} from '../utils/attachmentUtils';
 
 export default function Settings() {
   const { state, currentWorkspace, dispatch } = useTasks();
@@ -11,6 +17,7 @@ export default function Settings() {
   const [showAddTeamModal, setShowAddTeamModal] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
   const [memberForm, setMemberForm] = useState({ name: '', email: '', role: 'developer', customRole: '' });
+  const [backupBusy, setBackupBusy] = useState(false);
   const navigate = useNavigate();
   const team = currentWorkspace?.team || [];
 
@@ -25,7 +32,7 @@ export default function Settings() {
     dispatch({ type: 'UPDATE_WORKSPACE', payload: editingWorkspaceName.trim() });
   };
 
-  const handleDeleteWorkspace = () => {
+  const handleDeleteWorkspace = async () => {
     if (state.workspaces.length === 1) {
       alert('You must have at least one workspace');
       return;
@@ -35,57 +42,67 @@ export default function Settings() {
       'Make sure to export your data first to keep it safe.'
     );
     if (confirmed) {
-      dispatch({ type: 'DELETE_WORKSPACE' });
-      navigate('/');
+      try {
+        await deleteAttachmentsForTask(collectAttachmentsFromWorkspaces([currentWorkspace]));
+        dispatch({ type: 'DELETE_WORKSPACE' });
+        navigate('/');
+      } catch (error) {
+        console.error('Failed to delete workspace attachments:', error);
+        alert('Failed to delete workspace attachments. Please try again.');
+      }
     }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
       '⚠️ Delete account data? This will wipe all workspaces, tasks, team members, and settings. This cannot be undone.'
     );
     if (confirmed) {
-      dispatch({ type: 'RESET_DATA' });
-      navigate('/');
-    }
-  };
-
-  const handleExportData = () => {
-    const dataToExport = {
-      user: state.user,
-      workspaces: state.workspaces,
-      selectedWorkspaceId: state.selectedWorkspaceId,
-    };
-    const json = JSON.stringify(dataToExport, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `task-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImportData = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.name.endsWith('.json')) {
-      alert('Please select a JSON file');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
       try {
-        const imported = JSON.parse(e.target?.result);
-        dispatch({ type: 'IMPORT_DATA', payload: JSON.stringify(imported) });
-        alert('Data imported successfully');
+        await deleteAttachmentsForTask(collectAttachmentsFromWorkspaces(state.workspaces));
+        dispatch({ type: 'RESET_DATA' });
+        navigate('/');
       } catch (error) {
-        alert('Failed to import data. Make sure the file is valid JSON.');
+        console.error('Failed to delete account attachments:', error);
+        alert('Failed to delete account attachments. Please try again.');
       }
-    };
-    reader.readAsText(file);
+    }
+  };
+
+  const handleExportData = async () => {
+    setBackupBusy(true);
+    try {
+      const result = await exportBackup({
+        user: state.user,
+        workspaces: state.workspaces,
+        selectedWorkspaceId: state.selectedWorkspaceId,
+      });
+
+      if (result?.success) {
+        alert(`Backup exported successfully with ${result.attachmentCount} attachment file(s).`);
+      }
+    } catch (error) {
+      console.error('Failed to export backup:', error);
+      alert('Failed to export backup. Please try again.');
+    } finally {
+      setBackupBusy(false);
+    }
+  };
+
+  const handleImportData = async () => {
+    setBackupBusy(true);
+    try {
+      const result = await importBackup();
+      if (result?.success) {
+        dispatch({ type: 'IMPORT_DATA', payload: JSON.stringify(result.state) });
+        alert(`Backup imported successfully with ${result.attachmentCount} attachment file(s).`);
+      }
+    } catch (error) {
+      console.error('Failed to import backup:', error);
+      alert('Failed to import backup. Make sure the file is a valid TaskForge backup.');
+    } finally {
+      setBackupBusy(false);
+    }
   };
 
   const handleTeamEnabledChange = (enabled) => {
@@ -278,12 +295,14 @@ export default function Settings() {
               <button
                 className="bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 rounded-button  "
                 onClick={handleExportData}
+                disabled={backupBusy}
               >
-                Export data
+                {backupBusy ? 'Working...' : 'Export data'}
               </button>
               <button
                 className="bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 rounded-button "
-                onClick={() => document.getElementById('import-input')?.click()}
+                onClick={handleImportData}
+                disabled={backupBusy}
               >
                 Import data
               </button>
@@ -447,14 +466,6 @@ export default function Settings() {
           )}
         </section>
       )}
-
-      <input
-        id="import-input"
-        type="file"
-        accept="application/json"
-        onChange={handleImportData}
-        className="hidden"
-      />
 
       {showAddTeamModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">

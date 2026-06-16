@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useEffect, useReducer } from "react";
+﻿import { createContext, useContext, useEffect, useReducer, useState } from "react";
 
 const TaskContext = createContext();
 
@@ -111,6 +111,19 @@ function taskReducer(state, action) {
         workspaces: updateWorkspace((workspace) => ({
           ...workspace,
           tasks: workspace.tasks.filter((task) => task.id !== action.payload),
+        })),
+      };
+
+    case "UPDATE_TASK_ATTACHMENTS":
+      return {
+        ...state,
+        workspaces: updateWorkspace((workspace) => ({
+          ...workspace,
+          tasks: workspace.tasks.map((task) =>
+            task.id === action.payload.taskId 
+              ? { ...task, attachments: action.payload.attachments }
+              : task
+          ),
         })),
       };
 
@@ -272,43 +285,51 @@ function taskReducer(state, action) {
     case "RESET_DATA":
       return initialState;
 
+    case "SET_STATE":
+      return {
+        ...initialState,
+        ...action.payload,
+      };
+
     default:
       return state;
   }
 }
 
 export function TaskProvider({ children }) {
-  
-  const loadState = () => {
-    try {
-      const saved = localStorage.getItem("task-manager-data");
+  const [state, dispatch] = useReducer(taskReducer, initialState);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
-      if (!saved) return initialState;
-
-      return JSON.parse(saved);
-    } catch (err) {
-      console.error("Failed to load saved state", err);
-      return initialState;
-    }
-  };
-const [state, dispatch] = useReducer(
-    taskReducer,
-    initialState,
-    loadState
-  ); 
   useEffect(() => {
-  try {
-    localStorage.setItem(
-      "task-manager-data",
-      JSON.stringify(state)
-    );
-    console.log("State saved to localStorage", state);
-  } catch (err) {
-    console.error("Failed to save state", err);
-  }
-}, [state]);
+    const loadState = async () => {
+      if (window.api?.getTasks) {
+        try {
+          const saved = await window.api.getTasks();
+          if (saved && typeof saved === "object") {
+            dispatch({ type: "SET_STATE", payload: saved });
+          }
+        } catch (err) {
+          console.error("Failed to load saved state from electron-store", err);
+        }
+      }
+      setHasLoaded(true);
+    };
 
-  
+    loadState();
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+
+    try {
+      if (window.api?.saveTasks) {
+        window.api.saveTasks(state);
+      }
+    } catch (err) {
+      console.error("Failed to save state to electron-store", err);
+    }
+  }, [state, hasLoaded]);
+
   const currentWorkspace =
     state.workspaces.find((workspace) => workspace.id === state.selectedWorkspaceId) ||
     state.workspaces[0];

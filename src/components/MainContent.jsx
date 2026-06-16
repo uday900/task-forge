@@ -4,6 +4,7 @@ import TaskCard from './TaskCard';
 import TaskForm from './TaskForm';
 import TaskDetails from './TaskDetails';
 import { useTasks, getOverdueDays } from '../context/TaskContext';
+import { deleteAttachmentsForTask } from '../utils/attachmentUtils';
 
 export default function MainContent() {
 
@@ -79,6 +80,22 @@ export default function MainContent() {
     setSearch('');
     setFilterAssignees([]);
     setFilterPriorities([]);
+  };
+
+  const handleClearCompleted = async (event) => {
+    event.stopPropagation();
+    if (!window.confirm('Delete all completed tasks? This cannot be undone.')) {
+      return;
+    }
+
+    const completedAttachments = completedTasks.flatMap((task) => task.attachments || []);
+    try {
+      await deleteAttachmentsForTask(completedAttachments);
+      dispatch({ type: 'DELETE_ALL_COMPLETED' });
+    } catch (error) {
+      console.error('Failed to delete completed task attachments:', error);
+      alert('Failed to delete completed task attachments. Please try again.');
+    }
   };
 
   return (
@@ -356,12 +373,7 @@ export default function MainContent() {
             {completedTasks.length > 0 && (
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (window.confirm('Delete all completed tasks? This cannot be undone.')) {
-                    dispatch({ type: 'DELETE_ALL_COMPLETED' });
-                  }
-                }}
+                onClick={handleClearCompleted}
                 className="text-xs text-slate-500 hover:text-rose-400 transition-colors"
               >
                 Clear completed

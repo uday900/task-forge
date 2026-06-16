@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
 import { useTasks } from './context/TaskContext';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
@@ -11,7 +11,7 @@ export default function App() {
   const user = state.user;
 console.log('Current user:', user);
   return (
-    <BrowserRouter>
+    <HashRouter>
       {(!user?.name || !user?.email || !user?.role) && <UserSetupModal />}
      
       <div className="flex min-h-screen overflow-hidden bg-slate-950 text-white">
@@ -27,6 +27,6 @@ console.log('Current user:', user);
       </div>
 
       <TaskModal />
-    </BrowserRouter>
+    </HashRouter>
   );
 }

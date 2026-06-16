@@ -18,7 +18,7 @@ export default function Sidebar() {
       <div className="overflow-y-auto flex-1 px-3 py-4 space-y-6 scrollbar-thin scrollbar-track-slate-900 scrollbar-thumb-slate-700">
         <div className="mb-4 ">
           <Link to="/" className="flex items-center gap-3 text-decoration-none">
-            <img src="/app-logo.png" alt="TaskForge logo" className="h-14 w-14 rounded-xl object-cover" />
+            <img src="app-logo.png" alt="TaskForge logo" className="h-14 w-14 rounded-xl object-cover" />
             <span className="text-lg font-semibold text-white">TaskForge</span>
           </Link>
         </div>
